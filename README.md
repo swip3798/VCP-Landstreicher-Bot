@@ -6,9 +6,8 @@ Neue Funktionen werden auf Anfrage ermittelt.
 
 ## Bisherige Features
 
-[x] Registrierung
-[x] Erinnerung an Termine
-[] Hilfe zu den Commands
+1. Registrierung
+2. Erinnerung an Termine
 
 Mehr ist in Planung.
 
