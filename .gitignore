@@ -1,0 +1,6 @@
+sensitive.py
+*.pyc
+/.vscode/
+*.key
+*.pem
+*.log
