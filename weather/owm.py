@@ -3,7 +3,6 @@ import json
 from datetime import datetime
 from itertools import groupby
 # from sensitive import OWM_TOKEN
-OWM_TOKEN = "ccbbefeda55fabefd3dcfa0527cd0d5e"
 
 
 def api_call(sub_url):
