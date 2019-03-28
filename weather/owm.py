@@ -2,7 +2,7 @@ import requests
 import json
 from datetime import datetime
 from itertools import groupby
-# from sensitive import OWM_TOKEN
+from sensitive import OWM_TOKEN
 
 
 def api_call(sub_url):

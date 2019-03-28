@@ -42,7 +42,6 @@ class VCPBot():
 		logger.warning('Update "%s" caused error "%s"', update, error)
 	
 	def add_event(self, bot, update, args):
-		logger.info("New event set")
 		now = datetime.now()
 		date = args[0]
 		time = args[1]
@@ -50,7 +49,7 @@ class VCPBot():
 		if date in weekdays:
 			pass
 		elif date[-1] == ".":
-			date += now.year
+			date += self._fix_year(now.year)
 		timestamp = datetime.strptime(date + " " + time, "%d.%m.%y %H:%M").timestamp()
 		self.events.insert({
 			"id": str(uuid.uuid1()),
@@ -60,6 +59,7 @@ class VCPBot():
 			"preremember": False
 		})
 		update.message.reply_text("Termin ist vorgemerkt!")
+		logger.info("New event set on " + date + " " + time + ": " + message)
 
 	def register(self, bot, update, args):
 		
@@ -114,10 +114,11 @@ class VCPBot():
 
 	def _preprocessor(self, update):
 		try:
-			text = update.message.text
+			text = str(update.message.text)
 		except:
 			text = ""
-		logger.info("New message from " + str(update.message.from_user.first_name) + " in chat " + str(update.message.chat.id) + ": " + text)
+		# logger.info(str(update))
+		logger.info("New message from " + str(update.message.from_user.first_name) + " in chat " + str(update.message.chat.id) + ": " + str(text))
 		if update.message.chat.id in GROUP_CHATS.values() or update.message.chat.id == ADMIN:
 			return True
 		elif len(self.chat.search(lambda x: x["chat_id"] == update.message.chat.id and x["registered"])) > 0:
@@ -125,6 +126,7 @@ class VCPBot():
 		return text.find("/register") != -1
 	
 	def _fix_year(self, year):
+		year = str(year)
 		if len(year) == 4:
 			return year[2:]
 		else:
@@ -185,7 +187,7 @@ class VCPBot():
 		self.dispatcher.add_handler(CommandHandler("wetter", self.weather, pass_args=True))
 
 		# on noncommand i.e message - echo the message on Telegram
-		self.dispatcher.add_handler(MessageHandler(Filters.text, self.echo))
+		# self.dispatcher.add_handler(MessageHandler(Filters.text, self.echo))
 
 		# log all errors
 		self.dispatcher.add_error_handler(self.error)
