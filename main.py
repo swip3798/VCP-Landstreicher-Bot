@@ -10,7 +10,7 @@ import uuid
 import hashlib
 from nltk.corpus import stopwords
 import nltk
-from sensitive import TELEGRAM_TOKEN
+from sensitive import TELEGRAM_TOKEN, PASSWORD_HASH, GROUP_CHATS, ADMIN
 import weather
 
 # Enable logging
@@ -26,7 +26,6 @@ consoleHandler.setFormatter(logFormatter)
 logger.addHandler(consoleHandler)
 logger.setLevel(logging.INFO)
 # All constants
-from sensitive import *
 weekdays = ["montag", "dienstag", "mittwoch", "donnerstag", "freitag", "samstag", "sonntag"]
 
 class VCPBot():
