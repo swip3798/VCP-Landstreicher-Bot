@@ -38,7 +38,7 @@ def get_weather_forecast_from_location(location):
             "temp_max": max(temp),
             "weather": list(set([i["weather"][0]["description"] for i in forecast[i]]))
         }
-    return forecast
+    return [data["city"]["name"], forecast]
 
     
     
