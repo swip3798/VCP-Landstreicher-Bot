@@ -87,12 +87,31 @@ class VCPBot():
 		answer += "Aktueller Luftdruck: " + str(data["main"]["pressure"]) + "hPa\n"
 		answer += "Aktuelle Luftfeuchtigkeit: " + str(data["main"]["humidity"]) + "%\n\n"
 		
-		answer += "<b>Wetter Bedingungen</b>\n\n"
+		answer += "<b>Wetterbedingungen:</b>\n\n"
 		for i in data["weather"]:
-			answer += "- " + i["description"]
+			answer += "- " + i["description"] + "\n"
 		update.message.reply_text(answer, parse_mode="HTML")
 
-		
+	def weather_forecast(self, bot, update, args):
+		location = " ".join(args)
+		if len(args) == 0:
+			data = weather.get_weather_forecast_from_home()
+		else:
+			data = weather.get_weather_forecast_from_location(location)
+		answer = "<b>Die Wettervorhersage für " + location + "</b>\n\n"
+		dates = list(data.keys())
+		dates.sort()
+		for i in dates:
+			answer += "<b>Wetter für den " + i.strftime("%A den %d.%m.%y") + ":</b>\n"
+			answer += "Durchschnittliche Temperatur: " + str(round(data[i]["temp"], 1)) + "\n"
+			answer += "Höchste Temperatur: " + str(round(data[i]["temp_min"], 1)) + "\n"
+			answer += "Tiefste Temperatur: " + str(round(data[i]["temp_max"], 1)) + "\n"
+			answer += "Wetterbedingungen:\n"
+			for j in data[i]["weather"]:
+				answer += "- " + j + "\n"
+			answer += "\n"
+		update.message.reply_text(answer, parse_mode="HTML")
+
 		
 	def help(self, bot, update):
 		answer = "<b>Das kann ich alles:</b>\n\n"
@@ -100,8 +119,10 @@ class VCPBot():
 		answer += "Ich werde zum Zeitpunkt und einen Tag vorher an den Termin erinnern\n\n"
 		answer += "2. /hilfe \n"
 		answer += "Zeigt diese Hilfe an\n\n"
-		answer += "3. /register [passwort]\n"
-		answer += "Um mich im privaten Chat zu verwenden, musst du dich mit dem Passwort registrieren"
+		answer += "3. /wetter [Ort]\n"
+		answer += "Ich geb dir das aktuelle Wetter für einen Ort\n\n"
+		answer += "4. /wettervorhersage [Ort]\n"
+		answer += "Ich geb dir die Wettervorhersage für einen Ort\n\n"
 		update.message.reply_text(answer, parse_mode="HTML")
 
 		
@@ -185,6 +206,7 @@ class VCPBot():
 		self.dispatcher.add_handler(CommandHandler("register", self.register, pass_args=True))
 		self.dispatcher.add_handler(CommandHandler("hilfe", self.help))
 		self.dispatcher.add_handler(CommandHandler("wetter", self.weather, pass_args=True))
+		self.dispatcher.add_handler(CommandHandler("wettervorhersage", self.weather_forecast, pass_args=True))
 
 		# on noncommand i.e message - echo the message on Telegram
 		# self.dispatcher.add_handler(MessageHandler(Filters.text, self.echo))
