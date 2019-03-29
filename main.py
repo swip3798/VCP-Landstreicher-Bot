@@ -97,6 +97,7 @@ class VCPBot():
 			data = weather.get_weather_forecast_from_home()
 		else:
 			data = weather.get_weather_forecast_from_location(location)
+		location, data = data
 		answer = "<b>Die Wettervorhersage für " + location + "</b>\n\n"
 		dates = list(data.keys())
 		dates.sort()
