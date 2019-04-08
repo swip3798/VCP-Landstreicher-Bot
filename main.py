@@ -123,6 +123,19 @@ class VCPBot():
 		answer += "Ich geb dir das aktuelle Wetter für einen Ort\n\n"
 		answer += "4. /wettervorhersage [Ort]\n"
 		answer += "Ich geb dir die Wettervorhersage für einen Ort\n\n"
+		answer += "5. /terminliste\n"
+		answer += "Ich gebe dir eine Liste aller gespeicherten Termine \n\n"
+		update.message.reply_text(answer, parse_mode="HTML")
+
+	def list_events(self, bot, update):
+		answer = "<b>Das sind die aktuell gespeicherten Termine:</b>\n\n"
+		events_for_chat = self.events.search(lambda x: x["chat_id"] == int(update.message.chat.id))
+		if len(events_for_chat) == 0:
+			answer += "<i>Keine Termine gefunden</i>"
+		else:
+			for i in events_for_chat:
+				timestamp = datetime.fromtimestamp(i["timestamp"])
+				answer += "[" + datetime.strftime(timestamp, "%d.%m.%y %H:%M Uhr") + "] " + i["message"] + "\n"
 		update.message.reply_text(answer, parse_mode="HTML")
 
 		
@@ -189,7 +202,7 @@ class VCPBot():
 			self.updater.start_polling()
 
 		logger.info("Start event loop...")
-		self.eventloop = EventLoop(self.events, self.bot, logger, wait_time=10)
+		self.eventloop = EventLoop(self.events, self.bot, logger, wait_time=30)
 		self.eventloop.run()
 		self.updater.stop()
 
@@ -218,6 +231,7 @@ class VCPBot():
 		self.dispatcher.add_handler(CommandHandler("hilfe", self.help))
 		self.dispatcher.add_handler(CommandHandler("wetter", self.weather, pass_args=True))
 		self.dispatcher.add_handler(CommandHandler("wettervorhersage", self.weather_forecast, pass_args=True))
+		self.dispatcher.add_handler(CommandHandler("terminliste", self.list_events))
 
 		# on noncommand i.e message - echo the message on Telegram
 		# self.dispatcher.add_handler(MessageHandler(Filters.text, self.echo))
