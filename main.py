@@ -104,8 +104,8 @@ class VCPBot():
 		for i in dates:
 			answer += "<b>Wetter für den " + i.strftime("%A den %d.%m.%y") + ":</b>\n"
 			answer += "Durchschnittliche Temperatur: " + str(round(data[i]["temp"], 1)) + "\n"
-			answer += "Höchste Temperatur: " + str(round(data[i]["temp_min"], 1)) + "\n"
-			answer += "Tiefste Temperatur: " + str(round(data[i]["temp_max"], 1)) + "\n"
+			answer += "Tiefste Temperatur: " + str(round(data[i]["temp_min"], 1)) + "\n"
+			answer += "Höchste Temperatur: " + str(round(data[i]["temp_max"], 1)) + "\n"
 			answer += "Wetterbedingungen:\n"
 			for j in data[i]["weather"]:
 				answer += "- " + j + "\n"
