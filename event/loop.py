@@ -1,5 +1,15 @@
 import time
 import threading
+from datetime import datetime
+
+reminder_steps = {
+    #Format is [time_offset_in_seconds, description, follow_up_step]
+    0: [14*24*3600, "In zwei Wochen", 1],
+    1: [7*24*3600, "In einer Woche", 2],
+    2: [24*3600, "Morgen", 3],
+    3: [3600, "In einer Stunde", 4],
+    4: [0, "Jetzt", None]
+}
 
 class EventLoop():
 
@@ -10,27 +20,24 @@ class EventLoop():
         self.logger = logger
 
     def trigger_event(self, event, preremember):
-        self.bot.send_message(event["chat_id"], "Termin Erinnerung:\n\n" + str(event["message"]))
-        if not preremember:
+        if preremember == 4:
+            answer = "Termin Erinnerung (Jetzt):\n\n" + str(event["message"])
             self.events.delete(lambda x: x["id"] == event["id"])
         else:
-            event["preremember"] = True
+            step = reminder_steps[preremember]
+            timestamp = datetime.fromtimestamp(event["timestamp"])
+            answer = "Termin Erinnerung (" + step[1] + ", " + datetime.strftime(timestamp, "%d.%m.%y %H:%M Uhr") + "):\n\n" + str(event["message"])
+            event["preremember"] = step[2]
             self.events.update(event)
+        self.bot.send_message(event["chat_id"], answer)
     
     def run(self):
         try:
             while True:
-                onDueItems = self.events.search(lambda x: x["timestamp"] < time.time() and x["preremember"])
-                onDueItems_pre = self.events.search(lambda x: x["timestamp"] < time.time() + (3600*24) and not x["preremember"])
-                for i in onDueItems:
+                events_to_trigger = self.events.search(lambda x: x["timestamp"] - reminder_steps[x["preremember"]][0] < time.time())
+                for i in events_to_trigger:
                     self.logger.info("Started event trigger")
-                    thread = threading.Thread(target=self.trigger_event, args=(i,False))
-                    thread.start()
-                    thread.join()
-                    self.logger.info("Finished event")
-                for i in onDueItems_pre:
-                    self.logger.info("Started pre_event trigger")
-                    thread = threading.Thread(target=self.trigger_event, args=(i,True))
+                    thread = threading.Thread(target=self.trigger_event, args=(i,i["preremember"]))
                     thread.start()
                     thread.join()
                     self.logger.info("Finished event")

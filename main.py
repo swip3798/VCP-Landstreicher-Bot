@@ -4,7 +4,7 @@ import platform
 from LunaDB import LunaDB
 import sys
 from dispatcher_plugin import AdvancedDispatcher
-from event import EventLoop
+from event import EventLoop, reminder_steps
 from datetime import datetime
 import uuid
 import hashlib
@@ -12,6 +12,7 @@ from nltk.corpus import stopwords
 import nltk
 from sensitive import TELEGRAM_TOKEN, PASSWORD_HASH, GROUP_CHATS, ADMIN
 import weather
+import time
 
 # Enable logging
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -55,13 +56,12 @@ class VCPBot():
 			"timestamp": int(timestamp),
 			"chat_id": int(update.message.chat.id),
 			"message": message,
-			"preremember": False
+			"preremember": self._choose_reminder_step(timestamp)
 		})
 		update.message.reply_text("Termin ist vorgemerkt!")
 		logger.info("New event set on " + date + " " + time + ": " + message)
 
 	def register(self, bot, update, args):
-		
 		logger.info("Register attempt by " + update.message.from_user.first_name)
 		if hashlib.sha512(args[0].encode("utf-8")).hexdigest().upper() == PASSWORD_HASH:
 			self.chat.upsert({
@@ -123,6 +123,19 @@ class VCPBot():
 		answer += "Ich geb dir das aktuelle Wetter für einen Ort\n\n"
 		answer += "4. /wettervorhersage [Ort]\n"
 		answer += "Ich geb dir die Wettervorhersage für einen Ort\n\n"
+		answer += "5. /terminliste\n"
+		answer += "Ich gebe dir eine Liste aller gespeicherten Termine \n\n"
+		update.message.reply_text(answer, parse_mode="HTML")
+
+	def list_events(self, bot, update):
+		answer = "<b>Das sind die aktuell gespeicherten Termine:</b>\n\n"
+		events_for_chat = self.events.search(lambda x: x["chat_id"] == int(update.message.chat.id))
+		if len(events_for_chat) == 0:
+			answer += "<i>Keine Termine gefunden</i>"
+		else:
+			for i in events_for_chat:
+				timestamp = datetime.fromtimestamp(i["timestamp"])
+				answer += "[" + datetime.strftime(timestamp, "%d.%m.%y %H:%M Uhr") + "] " + i["message"] + "\n"
 		update.message.reply_text(answer, parse_mode="HTML")
 
 		
@@ -155,6 +168,17 @@ class VCPBot():
 	
 	def _convert_weekday_to_date(self, day_string):
 		pass
+	
+	def _choose_reminder_step(self, timestamp):
+		max_offset =  timestamp - time.time()
+		chosen_step = 4
+		current_step_offset = 0
+		for i in reminder_steps:
+			if max_offset > reminder_steps[i][0] and current_step_offset < reminder_steps[i][0]:
+				current_step_offset = reminder_steps[i][0]
+				chosen_step = i
+		return chosen_step
+
 
 	def send_message(self, chat_id, message):
 		logger.info("Bot send message to chat " + chat_id + " with message: " + message)
@@ -178,7 +202,7 @@ class VCPBot():
 			self.updater.start_polling()
 
 		logger.info("Start event loop...")
-		self.eventloop = EventLoop(self.events, self.bot, logger, wait_time=10)
+		self.eventloop = EventLoop(self.events, self.bot, logger, wait_time=30)
 		self.eventloop.run()
 		self.updater.stop()
 
@@ -207,6 +231,7 @@ class VCPBot():
 		self.dispatcher.add_handler(CommandHandler("hilfe", self.help))
 		self.dispatcher.add_handler(CommandHandler("wetter", self.weather, pass_args=True))
 		self.dispatcher.add_handler(CommandHandler("wettervorhersage", self.weather_forecast, pass_args=True))
+		self.dispatcher.add_handler(CommandHandler("terminliste", self.list_events))
 
 		# on noncommand i.e message - echo the message on Telegram
 		# self.dispatcher.add_handler(MessageHandler(Filters.text, self.echo))
