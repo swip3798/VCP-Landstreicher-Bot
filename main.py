@@ -4,7 +4,7 @@ import platform
 from LunaDB import LunaDB
 import sys
 from dispatcher_plugin import AdvancedDispatcher
-from event import EventLoop
+from event import EventLoop, reminder_steps
 from datetime import datetime
 import uuid
 import hashlib
@@ -12,6 +12,7 @@ from nltk.corpus import stopwords
 import nltk
 from sensitive import TELEGRAM_TOKEN, PASSWORD_HASH, GROUP_CHATS, ADMIN
 import weather
+import time
 
 # Enable logging
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -55,13 +56,12 @@ class VCPBot():
 			"timestamp": int(timestamp),
 			"chat_id": int(update.message.chat.id),
 			"message": message,
-			"preremember": False
+			"preremember": self._choose_reminder_step(timestamp)
 		})
 		update.message.reply_text("Termin ist vorgemerkt!")
 		logger.info("New event set on " + date + " " + time + ": " + message)
 
 	def register(self, bot, update, args):
-		
 		logger.info("Register attempt by " + update.message.from_user.first_name)
 		if hashlib.sha512(args[0].encode("utf-8")).hexdigest().upper() == PASSWORD_HASH:
 			self.chat.upsert({
@@ -155,6 +155,17 @@ class VCPBot():
 	
 	def _convert_weekday_to_date(self, day_string):
 		pass
+	
+	def _choose_reminder_step(self, timestamp):
+		max_offset =  timestamp - time.time()
+		chosen_step = 4
+		current_step_offset = 0
+		for i in reminder_steps:
+			if max_offset > reminder_steps[i][0] and current_step_offset < reminder_steps[i][0]:
+				current_step_offset = reminder_steps[i][0]
+				chosen_step = i
+		return chosen_step
+
 
 	def send_message(self, chat_id, message):
 		logger.info("Bot send message to chat " + chat_id + " with message: " + message)
