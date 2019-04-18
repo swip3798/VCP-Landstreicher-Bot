@@ -8,8 +8,6 @@ from event import EventLoop, reminder_steps
 from datetime import datetime
 import uuid
 import hashlib
-from nltk.corpus import stopwords
-import nltk
 from sensitive import TELEGRAM_TOKEN, PASSWORD_HASH, GROUP_CHATS, ADMIN
 import weather
 import time
