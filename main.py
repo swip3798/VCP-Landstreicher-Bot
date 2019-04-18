@@ -13,6 +13,7 @@ import nltk
 from sensitive import TELEGRAM_TOKEN, PASSWORD_HASH, GROUP_CHATS, ADMIN
 import weather
 import time
+import random
 
 # Enable logging
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -137,6 +138,16 @@ class VCPBot():
 				timestamp = datetime.fromtimestamp(i["timestamp"])
 				answer += "[" + datetime.strftime(timestamp, "%d.%m.%y %H:%M Uhr") + "] " + i["message"] + "\n"
 		update.message.reply_text(answer, parse_mode="HTML")
+
+	def standort(self, bot, update, args):
+		name = " ".join(args)
+		answers = [
+			update.message.from_user.first_name + " will, dass du endlich auftauchst, " + name + "!",
+			"Beweg dich hierher " + name + "!",
+			name + " ist wohl wieder spät dran, beweg dich!"
+		]
+		update.message.reply_text(random.choice(answers))
+
 
 		
 
