@@ -240,6 +240,7 @@ class VCPBot():
 		self.dispatcher.add_handler(CommandHandler("hilfe", self.help))
 		self.dispatcher.add_handler(CommandHandler("wetter", self.weather, pass_args=True))
 		self.dispatcher.add_handler(CommandHandler("wettervorhersage", self.weather_forecast, pass_args=True))
+		self.dispatcher.add_handler(CommandHandler("standort", self.standort, pass_args=True))
 		self.dispatcher.add_handler(CommandHandler("terminliste", self.list_events))
 
 		# on noncommand i.e message - echo the message on Telegram
